@@ -1,0 +1,47 @@
+{
+  "manifest_version": 3,
+  "name": "Code Odyssey Code Submission Extension",
+  "version": "1.0",
+  "description": "Code Odessey 문제 제출용 익스텐션",
+  "icons": {
+    "16": "submission.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "submission.png"
+  },
+  "permissions": ["unlimitedStorage", "storage", "tabs"],
+  "host_permissions": [
+    "https://school.programmers.co.kr/",
+    "https://swexpertacademy.com/",
+    "https://www.acmicpc.net/",
+    "https://solved.ac/api/v3/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.acmicpc.net/status?*from_mine*"],
+      "js": ["scripts/baekjoon/solved.js"]
+    },
+    {
+      "matches": ["https://swexpertacademy.com/*"],
+      "js": ["scripts/swexpertacademy.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://www.acmicpc.net/submit/*"],
+      "js": ["scripts/baekjoon/submit.js"]
+    },
+    {
+      "matches": ["http://localhost:3000/main*"],
+      "js": ["scripts/user.js"]
+    },
+    {
+      "matches": ["https://code-odyssey.site/main*"],
+      "js": ["scripts/user.js"]
+    }
+  ]
+}

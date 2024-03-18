@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="style.css" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div class="container">
+      <label
+        style="
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          text-align: center;
+        "
+      >
+        <h2 style="color: white">Code Odyssey extension</h2>
+        <input id="toggleSwitch" role="switch" type="checkbox" />
+      </label>
+    </div>
+    <div id="loginStatus">
+      <button id="siteButton">로그인하기</button>
+      <button id="logoutButton">로그아웃</button>
+      <h4 id="userDataText">""</h4>
+    <script src="popup.js" type="module"></script>
+  </body>
+</html>

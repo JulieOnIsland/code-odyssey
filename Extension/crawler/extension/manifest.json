@@ -1,0 +1,50 @@
+{
+  "manifest_version": 3,
+  "name": "Code Odyssey Code Crawling Extension",
+  "version": "1.0",
+  "description": "Code Odyssey problem crawling extension",
+  "icons": {
+    "16": "thumbnail.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "thumbnail.png"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'",
+    "sandbox": "sandbox allow-scripts; allow-same-origin",
+    "script-src": ["self", "http://127.0.0.1:*"]
+  },
+  "host_permissions": [
+    "https://school.programmers.co.kr/",
+    "https://swexpertacademy.com/",
+    "https://www.acmicpc.net/",
+    "https://solved.ac/api/v3/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://www.acmicpc.net/problem/*"],
+      "js": ["scripts/baekjoon/problem.js"]
+    },
+    {
+      "matches": [
+        "https://swexpertacademy.com/main/code/problem/problemDetail.do?*"
+      ],
+      "js": ["scripts/swea/problem.js"]
+    },
+    {
+      "matches": [
+        "https://school.programmers.co.kr/learn/courses/30/lessons/*"
+      ],
+      "js": ["scripts/programmers/problem.js"]
+    },
+    {
+      "matches": ["https://solved.ac/problems/tags/*"],
+      "js": ["scripts/baekjoon/get-list.js"]
+    }
+  ]
+}

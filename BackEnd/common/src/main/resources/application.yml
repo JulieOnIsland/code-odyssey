@@ -1,0 +1,84 @@
+# test 용
+server:
+  port: 8080
+
+spring:
+  application:
+    name: common-server
+
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    hikari:
+      max-lifetime: 160000
+
+  jpa:
+    defer-datasource-initialization: false
+    generate-ddl: false
+
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: true
+        dialect: org.hibernate.dialect.MariaDBDialect
+
+
+  data:
+    redis:
+      host: 158.180.80.211
+      port: 6379
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: ${DISCOVERY_SERVER}
+
+
+
+oauth:
+  kakao:
+    redirect-uri: ${FRONT_SERVER}/oauth/redirected/kakao
+    client-secret: ${KAKAO_OAUTH_SECRET}
+    client-id: ${KAKAO_OAUTH_ID}
+    scope: profile_image, profile_nickname, account_email
+
+  naver:
+    redirect-uri: ${FRONT_SERVER}/oauth/redirected/naver
+    client-secret: ${NAVER_OAUTH_SECRET}
+    client-id: ${NAVER_OAUTH_ID}
+    state: test
+
+  google:
+    redirect-uri: ${FRONT_SERVER}/oauth/redirected/google
+    client-secret: ${GOOGLE_OAUTH_SECRET}
+    client-id: ${GOOGLE_OAUTH_ID}
+    scope: profile, email
+
+jwt:
+  access-key: ${JWT_ACCESS}
+  refresh-key: ${JWT_REFRESH}
+  refresh-expiration: 14d
+  access-expiration: 14d
+
+front:
+  url: ${FRONT_SERVER}
+
+openai:
+  model: gpt-3.5-turbo
+  api:
+    key: ${OPEN_AI_KEY}
+    url: ${OPEN_AI_URL}
+
+papago:
+  api:
+    key: ${PAPAGO_API_KEY}
+    id: ${PAPAGO_API_ID}

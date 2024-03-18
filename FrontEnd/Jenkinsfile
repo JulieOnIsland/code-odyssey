@@ -1,0 +1,141 @@
+pipeline {
+    environment {
+        repository = "1w2k/code-odyssesy"
+        DOCKERHUB_CREDENTIALS = credentials('docker_credentials')
+        dockerImage = ''
+    }
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                script {
+                    // 코드 체크아웃
+                    checkout scm
+                }
+            }
+        }
+
+        stage('Build FE Image') {
+            steps {
+                script {
+                    sh "echo ${WORKSPACE}"
+                    dockerImage = docker.build("${repository}:FE_${BUILD_NUMBER}", "-f FrontEnd/Dockerfile ./FrontEnd")
+                }
+            }
+        }
+
+        stage('Login') {
+            steps {
+                script {
+                    sh "echo \${DOCKERHUB_CREDENTIALS_PSW} | docker login -u \${DOCKERHUB_CREDENTIALS_USR} --password-stdin"
+                }
+            }
+        }
+
+        stage('Push FE Image to Docker Hub') {
+            steps {
+                script {
+                    sh "docker push \${repository}:FE_\${BUILD_NUMBER}"
+                }
+            }
+        }
+
+        stage('Clean FE Image') {
+            steps {
+                script {
+                    sh "docker rmi \${repository}:FE_\${BUILD_NUMBER}"
+                }
+            }
+        }
+
+        stage('Print') {
+            steps {
+                script {
+                    // 변경된 브랜치와 머지 대상 브랜치 출력
+                    // 현재 빌드 중인 브랜치명 확인
+                    def currentBranch = env.BRANCH_NAME
+                    echo "Merge Target Branch : \${CHANGE_TARGET}"
+                    echo "Current Branch: \${currentBranch}"
+
+                    echo "프론트엔드입니다."
+
+                    // 여기에 빌드 스텝 추가
+                }
+            }
+        }
+
+        stage("GarbageCollecTESTSERV") {
+            steps {
+                sshPublisher(
+                    continueOnError: true, failOnError: false,
+                    publishers: [
+                        sshPublisherDesc(
+                            configName: "FRONT",
+                            verbose: true,
+                            transfers: [
+                                sshTransfer(execCommand: "sudo docker kill \$(docker ps | grep ReactApp | tr ' ' '\t' | cut -f1)"),
+                                sshTransfer(execCommand: "sudo docker system prune -af")
+                            ]
+                        )
+                    ]
+                )
+            }
+        }
+        
+        stage("TestDeploy") {
+            steps {
+                sshPublisher(
+                    continueOnError: false, failOnError: true,
+                    publishers: [
+                        sshPublisherDesc(
+                            configName: "FRONT",
+                            verbose: true,
+                            transfers: [
+                                sshTransfer(execCommand: "sudo docker rm -f ReactApp"),
+                                sshTransfer(execCommand: "sudo docker pull " + repository +":FE_$BUILD_NUMBER"),
+                                sshTransfer(execCommand: "sudo docker run -d -p 80:80 --name ReactApp " + repository + ":FE_${BUILD_NUMBER}")
+                            ]
+                        )
+                    ]
+                )
+            }
+        }
+    }
+    post {
+        success {
+            script {
+                def Author_ID = sh(script: "git show -s --pretty=%an", returnStdout: true).trim()
+                def Author_Name = sh(script: "git show -s --pretty=%ae", returnStdout: true).trim()
+                mattermostSend (color: 'good',
+                message: "빌드 성공: ${env.JOB_NAME} #${env.BUILD_NUMBER} by ${Author_ID}(${Author_Name})\n(<${env.BUILD_URL}|Details>)",
+                endpoint: "${env.MM_WEBHOOK}",
+                channel: 'C205'
+                )
+            }
+        }
+        failure {
+            script {
+                def Author_ID = sh(script: "git show -s --pretty=%an", returnStdout: true).trim()
+                def Author_Name = sh(script: "git show -s --pretty=%ae", returnStdout: true).trim()
+                mattermostSend (color: 'danger',
+                message: "빌드 실패: ${env.JOB_NAME} #${env.BUILD_NUMBER} by ${Author_ID}(${Author_Name})\n(<${env.BUILD_URL}|Details>)",
+                endpoint: "${env.MM_WEBHOOK}",
+                channel: 'C205'
+                )
+            }
+        }
+        unstable {
+            script {
+                def Author_ID = sh(script: "git show -s --pretty=%an", returnStdout: true).trim()
+                def Author_Name = sh(script: "git show -s --pretty=%ae", returnStdout: true).trim()
+                mattermostSend (color: 'good',
+                message: "빌드 성공: ${env.JOB_NAME} #${env.BUILD_NUMBER} by ${Author_ID}(${Author_Name})\n(<${env.BUILD_URL}|Details>)",
+                endpoint: "${env.MM_WEBHOOK}",
+                channel: 'C205'
+                )
+            }
+        }
+    }
+    
+}
